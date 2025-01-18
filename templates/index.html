@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battleships Game</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>Battleships Game</h1>
+    <form id="setupForm">
+        <label for="gridSize">Grid Size:</label>
+        <input type="number" id="gridSize" name="gridSize" min="3" max="10" value="5" required>
+        <label for="numShips">Number of Ships:</label>
+        <input type="number" id="numShips" name="numShips" min="1" max="5" value="3" required>
+        <button type="submit">Start Game</button>
+    </form>
+
+    <div id="gameArea" style="display:none;">
+        <h2>Make Your Guess</h2>
+        <form id="guessForm">
+            <label for="x">X Coordinate:</label>
+            <input type="number" id="x" name="x" required>
+            <label for="y">Y Coordinate:</label>
+            <input type="number" id="y" name="y" required>
+            <button type="submit">Guess</button>
+        </form>
+        <p id="message"></p>
+        <p id="shipsLeft"></p>
+    </div>
+
+    <script>
+        let ships = [];
+        let gridSize = 5;
+
+        document.getElementById("setupForm").onsubmit = function (event) {
+            event.preventDefault();
+            gridSize = parseInt(document.getElementById("gridSize").value);
+            const numShips = parseInt(document.getElementById("numShips").value);
+
+            fetch("/start_game", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ gridSize, numShips })
+            })
+            .then(response => response.json())
+            .then(data => {
+                ships = data.ships;
+                document.getElementById("gameArea").style.display = "block";
+                document.getElementById("shipsLeft").innerText = `Ships Left: ${data.ships}`;
+            });
+        };
+
+        document.getElementById("guessForm").onsubmit = function (event) {
+            event.preventDefault();
+            const x = parseInt(document.getElementById("x").value);
+            const y = parseInt(document.getElementById("y").value);
+
+            fetch("/guess", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ x, y, gridSize, ships })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("message").innerText = data.message || (data.result === "hit" ? "Hit!" : "Miss!");
+                document.getElementById("shipsLeft").innerText = `Ships Left: ${data.shipsLeft}`;
+                ships = data.shipsLeft === 0 ? [] : ships;
+                if (ships.length === 0) {
+                    document.getElementById("message").innerText += " You won!";
+                }
+            });
+        };
+    </script>
+</body>
+</html>
