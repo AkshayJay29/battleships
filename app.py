@@ -1,17 +1,4 @@
 import os
-from flask import Flask
-
-app = Flask(__name__)
-
-@app.route('/')
-def home():
-    return 'Hello, World!'
-
-if __name__ == '__main__':
-    # Use the PORT environment variable or default to 5000
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
-
-
 from flask import Flask, render_template, request, jsonify
 import random
 
@@ -44,9 +31,11 @@ def start_game():
     # Initialize game state
     board = generate_board(grid_size)
     ships = place_ships(board, num_ships)
+
     return jsonify({
         "gridSize": grid_size,
         "ships": len(ships),
+        "message": "Game Started! Start guessing!"
     })
 
 @app.route("/guess", methods=["POST"])

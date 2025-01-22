@@ -3,74 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Battleships Game</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <title>Battleship Game</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Battleships Game</h1>
-    <form id="setupForm">
-        <label for="gridSize">Grid Size:</label>
-        <input type="number" id="gridSize" name="gridSize" min="3" max="10" value="5" required>
-        <label for="numShips">Number of Ships:</label>
-        <input type="number" id="numShips" name="numShips" min="1" max="5" value="3" required>
-        <button type="submit">Start Game</button>
-    </form>
+    <h1>Welcome to Battleship!</h1>
 
-    <div id="gameArea" style="display:none;">
-        <h2>Make Your Guess</h2>
-        <form id="guessForm">
-            <label for="x">X Coordinate:</label>
-            <input type="number" id="x" name="x" required>
-            <label for="y">Y Coordinate:</label>
-            <input type="number" id="y" name="y" required>
-            <button type="submit">Guess</button>
+    <div id="gameArea">
+        <h3>Game Settings</h3>
+        <form id="gameForm">
+            <label for="gridSize">Grid Size:</label>
+            <input type="number" id="gridSize" name="gridSize" value="5" min="3" max="10" required>
+            <br><br>
+
+            <label for="numShips">Number of Ships:</label>
+            <input type="number" id="numShips" name="numShips" value="3" min="1" required>
+            <br><br>
+
+            <button type="submit">Start Game</button>
         </form>
-        <p id="message"></p>
-        <p id="shipsLeft"></p>
+
+        <div id="boardArea">
+            <!-- Game board will be rendered here -->
+        </div>
+
+        <div id="messageArea"></div>
+
+        <h3>Your Guess</h3>
+        <form id="guessForm">
+            <label for="xCoordinate">X Coordinate (row):</label>
+            <input type="number" id="xCoordinate" name="xCoordinate" required>
+            <br><br>
+
+            <label for="yCoordinate">Y Coordinate (column):</label>
+            <input type="number" id="yCoordinate" name="yCoordinate" required>
+            <br><br>
+
+            <button type="submit">Submit Guess</button>
+        </form>
     </div>
 
     <script>
         let ships = [];
-        let gridSize = 5;
 
-        document.getElementById("setupForm").onsubmit = function (event) {
+        document.getElementById('gameForm').addEventListener('submit', function(event) {
             event.preventDefault();
-            gridSize = parseInt(document.getElementById("gridSize").value);
-            const numShips = parseInt(document.getElementById("numShips").value);
 
-            fetch("/start_game", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ gridSize, numShips })
+            let gridSize = document.getElementById('gridSize').value;
+            let numShips = document.getElementById('numShips').value;
+
+            // Send game start request
+            fetch('/start_game', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    gridSize: gridSize,
+                    numShips: numShips
+                })
             })
             .then(response => response.json())
             .then(data => {
-                ships = data.ships;
-                document.getElementById("gameArea").style.display = "block";
-                document.getElementById("shipsLeft").innerText = `Ships Left: ${data.ships}`;
+                ships = Array.from({ length: data.ships }, (_, index) => `ship-${index}`);
+                renderBoard(gridSize);
+                document.getElementById('messageArea').textContent = data.message;
             });
-        };
+        });
 
-        document.getElementById("guessForm").onsubmit = function (event) {
+        document.getElementById('guessForm').addEventListener('submit', function(event) {
             event.preventDefault();
-            const x = parseInt(document.getElementById("x").value);
-            const y = parseInt(document.getElementById("y").value);
 
-            fetch("/guess", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ x, y, gridSize, ships })
+            let x = document.getElementById('xCoordinate').value;
+            let y = document.getElementById('yCoordinate').value;
+            let gridSize = document.getElementById('gridSize').value;
+
+            // Send guess request
+            fetch('/guess', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    x: x,
+                    y: y,
+                    gridSize: gridSize,
+                    ships: ships
+                })
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById("message").innerText = data.message || (data.result === "hit" ? "Hit!" : "Miss!");
-                document.getElementById("shipsLeft").innerText = `Ships Left: ${data.shipsLeft}`;
-                ships = data.shipsLeft === 0 ? [] : ships;
-                if (ships.length === 0) {
-                    document.getElementById("message").innerText += " You won!";
+                document.getElementById('messageArea').textContent = `Result: ${data.result}, Ships left: ${data.shipsLeft}`;
+            });
+        });
+
+        function renderBoard(gridSize) {
+            let boardHTML = "<table>";
+            for (let i = 0; i < gridSize; i++) {
+                boardHTML += "<tr>";
+                for (let j = 0; j < gridSize; j++) {
+                    boardHTML += `<td id="cell-${i}-${j}" class="cell" onclick="makeGuess(${i}, ${j})">~</td>`;
                 }
-            });
-        };
+                boardHTML += "</tr>";
+            }
+            boardHTML += "</table>";
+            document.getElementById('boardArea').innerHTML = boardHTML;
+        }
+
+        function makeGuess(x, y) {
+            let cell = document.getElementById(`cell-${x}-${y}`);
+            cell.textContent = "X"; // Indicate it's guessed
+        }
     </script>
 </body>
 </html>
