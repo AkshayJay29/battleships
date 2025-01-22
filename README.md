@@ -68,4 +68,5 @@ Flask for the web framework.
 
 
 ### Home Screen 
-![image](https://github.com/user-attachments/assets/6c36feae-44db-4656-82f4-973765109c1d)
+![bs](https://github.com/user-attachments/assets/458e55a9-46c3-4e13-9714-4802e905ceac)
+
