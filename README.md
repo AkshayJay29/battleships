@@ -2,6 +2,9 @@
 
 This is a simple web-based Battleships game built using Python and Flask, deployed on Heroku.
 
+![bs](https://github.com/user-attachments/assets/458e55a9-46c3-4e13-9714-4802e905ceac)
+
+
 ### Features:
 - A randomly generated board with ships placed at random locations.
 - A grid where users can guess the location of ships.
@@ -67,6 +70,5 @@ Inspired by the classic Battleships game.
 Flask for the web framework.
 
 
-### Home Screen 
-![bs](https://github.com/user-attachments/assets/458e55a9-46c3-4e13-9714-4802e905ceac)
+
 
